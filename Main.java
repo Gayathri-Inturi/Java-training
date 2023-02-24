@@ -1,84 +1,75 @@
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Arrays;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.List;
 
-public class Main
- {
+public class Main {
+    public static void main(String[] args) throws FileNotFoundException {
+        PrintWriter op = new PrintWriter(new File("Book1.csv"));
+        StringBuilder sb = new StringBuilder();
+        int count=0;
+        int count2=0;
+        ArrayList<ArrayList<String>> hm = new ArrayList<>();
+        Random r = new Random();
+        for (int j = 0; j < 3; j++) {
+            sb.append("\r\n");
+            sb.append("Player1");
+            sb.append(",");
+            sb.append("Player2");
+            sb.append("\r\n");
     
-    public static void main(String[] args) {
-        
-       // int cycles = 3; // number of cycles
-        int rounds = 10; // number of rounds per cycle
-        
-        int score1 = 0; // keep track of player 1's total score
-        int score2 = 0; // keep track of player 2's total score
-        
-        // play the game for 'cycles' cycles
-        for (int i = 1; i <rounds; i++) {
-            
-            // play 'rounds' rounds per cycle
-            int[] results1 = IntStream.range(0, rounds).map(j -> tossCoin()).toArray(); // player 1 tosses the coin
-            int[] results2 = IntStream.range(0, rounds).map(j -> tossCoin()).toArray(); // player 2 tosses the coin
-            
-            // count the number of heads for each player
-            int heads1 = (int) Arrays.stream(results1).filter(result -> result == 1).count();
-            int heads2 = (int) Arrays.stream(results2).filter(result -> result == 1).count();
-            
-            // determine the winner of the cycle
-            String winner = "";
-            if (heads1 > heads2) {
-                score1++; // player 1 wins the cycle
-                winner = "Player 1";
-            } else if (heads2 > heads1) {
-                score2++; // player 2 wins the cycle
-                winner = "Player 2";
+            ArrayList<String> t1 = new ArrayList<>();
+            ArrayList<String> t2 = new ArrayList<>();
+            for (int i = 0; i < 10; i++) {
+                int p = r.nextInt(2);
+                if (p == 0) {
+                    t1.add("H");
+                    t2.add("T");
+                } else {
+                    t1.add("T");
+                    t2.add("H");
+                }
+            }
+            int l1 = t1.stream().filter(x -> x.equals("head")).collect(Collectors.toList()).size();
+            int l2 = t2.stream().filter(x -> x.equals("head")).collect(Collectors.toList()).size();
+            for (int i = 0; i <= 9; i++) {
+                sb.append("Round " + (i + 1));
+                sb.append(",");
+                sb.append(t1.get(i));
+                sb.append(",");
+                sb.append(t2.get(i));
+                sb.append("\r\n");
+
+            }
+            String winner="";
+            if (l1 != l2) {
+                winner = (l1 > l2) ? "Player1" : "Player2";
+                sb.append(winner);
             } else {
-                winner = "Tie";
+                sb.append("Match tie");
+            }
+            if(winner.equals("Player1")){
+                count++;
+            }
+            else{
+                count2++;
             }
             
-            // write the results of the cycle to a CSV file
-            String[] data = {Integer.toString(i), Integer.toString(heads1), Integer.toString(heads2), winner};
-            writeDataToCsv("book.csv", data);
+            hm.add(t1);
+            hm.add(t2);
         }
-        
-        // determine the winner of the game based on the total scores
-        String winner = "";
-        if (score1 > score2) {
-            winner = "Player 1";
-        } else if (score2 > score1) {
-            winner = "Player 2";
-        } else {
-            winner = "Tie";
+        if(count>count2){
+            op.append("Player1 winner");
         }
-        
-        // write the overall results to a CSV file
-        for(int j=1;j<3;j++){
-        String[] header = { "Player 1 Score", "Player 2 Score", "Winner"};
-        String[] data = { Integer.toString(score1), Integer.toString(score2), winner};
-        writeDataToCsv("book.csv", header);
-        writeDataToCsv("book.csv", data);
+        else{
+            op.append("Player2 winner");
         }
-    }
-    
-    // toss a coin and return the result (0 for tails, 1 for heads)
-    private static int tossCoin() {
-        Random random = new Random();
-        return random.nextInt(2);
-    }
-    
-    // write an array of data to a CSV file
-    private static void writeDataToCsv(String filename, String[] data) {
-        try (FileWriter writer = new FileWriter(filename, true)) {
-            String line = Arrays.stream(data).collect(Collectors.joining(","));
-            writer.append(line);
-            writer.append("\n");
-        } catch (IOException e) {
-            System.out.println("Error writing to file: " + e.getMessage());
-        }
+        op.write(sb.toString());
+        op.close();
     }
 }
-
-
